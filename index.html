@@ -8,27 +8,33 @@
   <style>
     body { 
       font-family: system-ui, Arial, sans-serif; 
-      margin: 20px; 
-      max-width: 1000px; 
+      margin: 10px; 
+      max-width: 100%; 
+      padding: 0;
     }
 
-    h1 { margin-bottom: 5px; }
+    h1 { margin-bottom: 5px; font-size: 24px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 18px; }
+    h4 { font-size: 16px; }
 
     .row { 
       display: flex; 
-      gap: 10px; 
+      gap: 8px; 
       flex-wrap: wrap; 
       align-items: center; 
     }
 
     input, button, textarea { 
-      padding: 10px; 
-      font-size: 15px; 
+      padding: 12px; 
+      font-size: 16px; 
+      border-radius: 8px;
+      border: 1px solid #ddd;
     }
 
     input, textarea { 
       flex: 1; 
-      min-width: 160px; 
+      min-width: 140px; 
     }
 
     textarea { 
@@ -37,50 +43,221 @@
 
     button { 
       cursor: pointer; 
+      background: #2563eb;
+      color: white;
+      border: none;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
     }
 
     table { 
       width: 100%; 
       border-collapse: collapse; 
       margin-top: 12px; 
+      font-size: 14px;
     }
 
     th, td { 
       border-bottom: 1px solid #ddd; 
-      padding: 8px; 
+      padding: 10px 8px; 
       text-align: left; 
       vertical-align: top;
     }
 
     .card { 
       border: 1px solid #ddd; 
-      border-radius: 10px; 
+      border-radius: 12px; 
       padding: 15px; 
-      margin: 15px 0; 
+      margin: 10px 0; 
+      background: white;
     }
 
-    .muted { color: #666; }
+    .muted { color: #666; font-size: 14px; }
     .danger { color: #b00020; }
     .right { text-align: right; }
 
     .tabs {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .tab {
       border: 1px solid #ddd;
       background: #fff;
       border-radius: 20px;
-      padding: 6px 14px;
+      padding: 8px 16px;
+      font-size: 14px;
+      color: #111;
     }
 
     .tab.active {
       font-weight: bold;
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
     }
 
     .section { display: none; }
     .section.active { display: block; }
+
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+      body {
+        margin: 5px;
+        padding: 0;
+      }
+
+      h1 { font-size: 20px; }
+      h2 { font-size: 18px; }
+      h3 { font-size: 16px; }
+
+      .card {
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 8px;
+      }
+
+      .row {
+        gap: 6px;
+      }
+
+      input, button, textarea {
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      input, textarea {
+        min-width: 120px;
+      }
+
+      button {
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 8px 6px;
+      }
+
+      .tab {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      .muted {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        margin: 2px;
+      }
+
+      h1 { font-size: 18px; }
+      h2 { font-size: 16px; }
+      h3 { font-size: 14px; }
+
+      .card {
+        padding: 10px;
+        margin: 5px 0;
+      }
+
+      .row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      input, button, textarea {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      input, textarea {
+        min-width: auto;
+      }
+
+      button {
+        padding: 12px;
+        font-size: 16px;
+      }
+
+      table {
+        font-size: 11px;
+      }
+
+      th, td {
+        padding: 6px 4px;
+      }
+
+      .tabs {
+        justify-content: center;
+      }
+
+      .tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 4px;
+        font-size: 11px;
+      }
+    }
+
+    /* Responsive summary cards */
+    @media (max-width: 768px) {
+      .summary-cards {
+        flex-direction: column !important;
+        gap: 15px !important;
+      }
+
+      .summary-card {
+        padding: 12px !important;
+      }
+
+      .summary-card h4 {
+        font-size: 14px !important;
+      }
+
+      .summary-stats {
+        gap: 15px !important;
+      }
+
+      .summary-stat {
+        min-width: 80px;
+      }
+
+      .summary-stat .value {
+        font-size: 20px !important;
+      }
+
+      .summary-stat .label {
+        font-size: 11px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .summary-stats {
+        justify-content: space-around !important;
+        gap: 10px !important;
+      }
+
+      .summary-stat {
+        text-align: center;
+        flex: 1;
+      }
+
+      .summary-stat .value {
+        font-size: 18px !important;
+      }
+    }
   </style>
 </head>
 
@@ -89,16 +266,19 @@
 <h1>🏍 Control de Moto</h1>
 <p class="muted">Viajes + Mantenimiento (GitHub Pages + Supabase)</p>
 
-<div class="card">
+<div class="card" id="loginCard">
   <h2>Iniciar sesión</h2>
   <div class="row">
     <input id="email" type="email" placeholder="Email" />
     <input id="password" type="password" placeholder="Contraseña" />
     <button id="btnSignup">Crear cuenta</button>
     <button id="btnLogin">Entrar</button>
-    <button id="btnLogout" style="display:none;">Salir</button>
   </div>
   <p id="authMsg" class="muted"></p>
+</div>
+
+<div id="logoutSection" style="display:none; text-align: right; margin-bottom: 10px;">
+  <button id="btnLogout" style="background: #dc2626;">Salir</button>
 </div>
 
 <div id="app" class="card" style="display:none;">
@@ -132,8 +312,12 @@
 
     <div id="resumen" class="muted" style="margin-top:10px;"></div>
 
-    <h3 style="margin-top:20px;">Lista de viajes</h3>
-    <div id="tabla"></div>
+    <h3 style="margin-top:20px;">Historial completo</h3>
+    <div class="row" style="margin-bottom: 10px;">
+      <input id="mesHistorial" type="month" />
+      <button id="btnRefreshHistorial">Actualizar</button>
+    </div>
+    <div id="tablaHistorial"></div>
   </div>
 
   <!-- ================= MANTENIMIENTO ================= -->
@@ -146,9 +330,6 @@
       <input id="mCosto" type="number" step="0.01" placeholder="Costo" />
       <button id="btnAddMant">Guardar</button>
     </div>
-
-    <h3 style="margin-top:20px;">Lista de mantenimientos</h3>
-    <div id="tablaMant"></div>
   </div>
 
 </div>
@@ -165,11 +346,40 @@ const $ = id => document.getElementById(id);
 
 function formatMoney(n){ return Number(n||0).toFixed(2); }
 
+const monthCache = new Map();
+
+async function fetchMonthData(yyyymm){
+  const {start,end} = monthRange(yyyymm);
+  const key = `${start}|${end}`;
+  const cached = monthCache.get(key);
+  if(cached) return cached;
+
+  const viajesQ = supabase
+    .from("viajes")
+    .select("id,fecha,inicio,destino,km,costo")
+    .gte("fecha",start)
+    .lt("fecha",end);
+
+  const mantQ = supabase
+    .from("mantenimientos")
+    .select("id,fecha,descripcion,costo")
+    .gte("fecha",start)
+    .lt("fecha",end);
+
+  const [{data:viajes,error:errorViajes},{data:mantenimientos,error:errorMant}] = await Promise.all([viajesQ,mantQ]);
+  if(errorViajes || errorMant) throw (errorViajes || errorMant);
+
+  const result = { viajes: viajes || [], mantenimientos: mantenimientos || [] };
+  monthCache.set(key,result);
+  return result;
+}
+
 function ensureDefaults(){
   const today = new Date().toISOString().slice(0,10);
   if(!$("fecha").value) $("fecha").value = today;
   if(!$("mFecha").value) $("mFecha").value = today;
   if(!$("mes").value) $("mes").value = today.slice(0,7);
+  if(!$("mesHistorial").value) $("mesHistorial").value = today.slice(0,7);
 }
 
 function monthRange(yyyymm){
@@ -190,27 +400,13 @@ function setTab(tab){
 }
 
 async function refreshViajes(){
-  const {start,end} = monthRange($("mes").value);
-
-  // Obtener viajes del mes
-  const {data:viajes,error:errorViajes} = await supabase
-    .from("viajes")
-    .select("*")
-    .gte("fecha",start)
-    .lt("fecha",end)
-    .order("fecha",{ascending:false});
-
-  // Obtener mantenimientos del mes
-  const {data:mantenimientos,error:errorMant} = await supabase
-    .from("mantenimientos")
-    .select("*")
-    .gte("fecha",start)
-    .lt("fecha",end)
-    .order("fecha",{ascending:false});
-
-  if(errorViajes || errorMant){ 
-    $("tabla").innerHTML="Error"; 
-    return; 
+  let viajes = [];
+  let mantenimientos = [];
+  try{
+    ({viajes,mantenimientos} = await fetchMonthData($("mes").value));
+  }catch(e){
+    $("resumen").textContent = "Error";
+    return;
   }
 
   const totalViajes = viajes.length;
@@ -220,34 +416,34 @@ async function refreshViajes(){
   const totalMantenimientos = mantenimientos.length;
 
   $("resumen").innerHTML = `
-    <div style="display: flex; gap: 30px; margin-bottom: 15px;">
-      <div style="flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+    <div class="summary-cards" style="display: flex; gap: 30px; margin-bottom: 15px;">
+      <div class="summary-card" style="flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
         <h4 style="margin: 0 0 10px 0; color: #333;">🏍 Viajes del mes</h4>
-        <div style="display: flex; gap: 20px;">
-          <div>
-            <div style="font-size: 24px; font-weight: bold; color: #2563eb;">${totalViajes}</div>
-            <div style="font-size: 12px; color: #666;">Viajes</div>
+        <div class="summary-stats" style="display: flex; gap: 20px;">
+          <div class="summary-stat">
+            <div class="value" style="font-size: 24px; font-weight: bold; color: #2563eb;">${totalViajes}</div>
+            <div class="label" style="font-size: 12px; color: #666;">Viajes</div>
           </div>
-          <div>
-            <div style="font-size: 24px; font-weight: bold; color: #059669;">${totalKm.toFixed(1)}</div>
-            <div style="font-size: 12px; color: #666;">Kilómetros</div>
+          <div class="summary-stat">
+            <div class="value" style="font-size: 24px; font-weight: bold; color: #059669;">${totalKm.toFixed(1)}</div>
+            <div class="label" style="font-size: 12px; color: #666;">Kilómetros</div>
           </div>
-          <div>
-            <div style="font-size: 24px; font-weight: bold; color: #dc2626;">$${formatMoney(totalCostoViajes)}</div>
-            <div style="font-size: 12px; color: #666;">Gasto en viajes</div>
+          <div class="summary-stat">
+            <div class="value" style="font-size: 24px; font-weight: bold; color: #dc2626;">$${formatMoney(totalCostoViajes)}</div>
+            <div class="label" style="font-size: 12px; color: #666;">Gasto en viajes</div>
           </div>
         </div>
       </div>
-      <div style="flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+      <div class="summary-card" style="flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
         <h4 style="margin: 0 0 10px 0; color: #333;">🔧 Mantenimiento del mes</h4>
-        <div style="display: flex; gap: 20px;">
-          <div>
-            <div style="font-size: 24px; font-weight: bold; color: #7c3aed;">${totalMantenimientos}</div>
-            <div style="font-size: 12px; color: #666;">Servicios</div>
+        <div class="summary-stats" style="display: flex; gap: 20px;">
+          <div class="summary-stat">
+            <div class="value" style="font-size: 24px; font-weight: bold; color: #7c3aed;">${totalMantenimientos}</div>
+            <div class="label" style="font-size: 12px; color: #666;">Servicios</div>
           </div>
-          <div>
-            <div style="font-size: 24px; font-weight: bold; color: #dc2626;">$${formatMoney(totalCostoMant)}</div>
-            <div style="font-size: 12px; color: #666;">Gasto en mantenimiento</div>
+          <div class="summary-stat">
+            <div class="value" style="font-size: 24px; font-weight: bold; color: #dc2626;">$${formatMoney(totalCostoMant)}</div>
+            <div class="label" style="font-size: 12px; color: #666;">Gasto en mantenimiento</div>
           </div>
         </div>
       </div>
@@ -256,54 +452,76 @@ async function refreshViajes(){
       <strong>Total gastado este mes: $${formatMoney(totalCostoViajes + totalCostoMant)}</strong>
     </div>
   `;
-
-  if(!viajes.length){ $("tabla").innerHTML="Sin viajes."; return; }
-
-  $("tabla").innerHTML = `
-    <table>
-      <tr>
-        <th>Fecha</th>
-        <th>Ruta</th>
-        <th class="right">KM</th>
-        <th class="right">Costo</th>
-        <th></th>
-      </tr>
-      ${viajes.map(v=>`
-        <tr>
-          <td>${v.fecha}</td>
-          <td>${v.inicio} → ${v.destino}</td>
-          <td class="right">${Number(v.km).toFixed(1)}</td>
-          <td class="right">${formatMoney(v.costo)}</td>
-          <td><button onclick="deleteViaje('${v.id}')">X</button></td>
-        </tr>`).join("")}
-    </table>
-  `;
 }
 
-async function refreshMant(){
-  const {data,error} = await supabase
-    .from("mantenimientos")
-    .select("*")
-    .order("fecha",{ascending:false});
+async function refreshHistorial(){
+  let viajes = [];
+  let mantenimientos = [];
+  try{
+    ({viajes,mantenimientos} = await fetchMonthData($("mesHistorial").value));
+  }catch(e){
+    $("tablaHistorial").innerHTML="Error";
+    return;
+  }
 
-  if(error){ $("tablaMant").innerHTML="Error"; return; }
+  // Combinar y ordenar por fecha
+  const combinados = [];
+  
+  // Agregar viajes
+  viajes.forEach(v => {
+    combinados.push({
+      fecha: v.fecha,
+      tipo: 'viaje',
+      icono: '🏍',
+      descripcion: `${v.inicio} → ${v.destino}`,
+      detalles: `${Number(v.km).toFixed(1)} km`,
+      costo: v.costo,
+      id: v.id,
+      deleteFunc: 'deleteViaje'
+    });
+  });
 
-  if(!data.length){ $("tablaMant").innerHTML="Sin mantenimientos."; return; }
+  // Agregar mantenimientos
+  mantenimientos.forEach(m => {
+    combinados.push({
+      fecha: m.fecha,
+      tipo: 'mantenimiento',
+      icono: '🔧',
+      descripcion: m.descripcion,
+      detalles: 'Servicio',
+      costo: m.costo,
+      id: m.id,
+      deleteFunc: 'deleteMant'
+    });
+  });
 
-  $("tablaMant").innerHTML = `
+  // Ordenar por fecha (más reciente primero)
+  combinados.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+  if(!combinados.length){ 
+    $("tablaHistorial").innerHTML="Sin actividades este mes."; 
+    return; 
+  }
+
+  $("tablaHistorial").innerHTML = `
     <table>
       <tr>
         <th>Fecha</th>
-        <th>Descripción</th>
+        <th>Actividad</th>
+        <th>Detalles</th>
         <th class="right">Costo</th>
         <th></th>
       </tr>
-      ${data.map(m=>`
-        <tr>
-          <td>${m.fecha}</td>
-          <td>${m.descripcion}</td>
-          <td class="right">${formatMoney(m.costo)}</td>
-          <td><button onclick="deleteMant('${m.id}')">X</button></td>
+      ${combinados.map(item=>`
+        <tr style="border-left: 4px solid ${item.tipo === 'viaje' ? '#2563eb' : '#7c3aed'};">
+          <td>${item.fecha}</td>
+          <td>
+            <span style="font-size: 16px;">${item.icono}</span>
+            <strong>${item.descripcion}</strong>
+          </td>
+          <td>${item.detalles}</td>
+          <td class="right">$${formatMoney(item.costo)}</td>
+          <td><button onclick="${item.deleteFunc}('${item.id}')">X</button></td>
         </tr>`).join("")}
     </table>
   `;
@@ -311,12 +529,15 @@ async function refreshMant(){
 
 window.deleteViaje = async id=>{
   await supabase.from("viajes").delete().eq("id",id);
+  monthCache.clear();
   refreshViajes();
+  refreshHistorial();
 };
 
 window.deleteMant = async id=>{
   await supabase.from("mantenimientos").delete().eq("id",id);
-  refreshMant();
+  monthCache.clear();
+  refreshHistorial();
 };
 
 $("btnAdd").onclick = async ()=>{
@@ -336,7 +557,9 @@ $("btnAdd").onclick = async ()=>{
   $("destino").value="";
   $("km").value="";
   $("costo").value="";
+  monthCache.clear();
   refreshViajes();
+  refreshHistorial();
 };
 
 $("btnAddMant").onclick = async ()=>{
@@ -352,10 +575,12 @@ $("btnAddMant").onclick = async ()=>{
 
   $("mDesc").value="";
   $("mCosto").value="";
-  refreshMant();
+  monthCache.clear();
+  refreshHistorial();
 };
 
 $("btnRefresh").onclick = refreshViajes;
+$("btnRefreshHistorial").onclick = refreshHistorial;
 
 $("tabViajes").onclick = ()=>setTab("viajes");
 $("tabMant").onclick = ()=>setTab("mant");
@@ -385,11 +610,17 @@ $("btnLogout").onclick = async ()=>{
 async function updateUI(){
   const {data:{session}} = await supabase.auth.getSession();
   const logged = !!session;
+  
+  // Controlar visibilidad del login y logout
+  $("loginCard").style.display = logged?"none":"block";
+  $("logoutSection").style.display = logged?"block":"none";
+  
+  // Controlar visibilidad de la app
   $("app").style.display = logged?"block":"none";
-  $("btnLogout").style.display = logged?"inline-block":"none";
+  
   if(logged){
     refreshViajes();
-    refreshMant();
+    refreshHistorial();
   }
 }
 
