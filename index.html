@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Control Moto - Viajes y Mantenimiento</title>
+
+  <style>
+    body { 
+      font-family: system-ui, Arial, sans-serif; 
+      margin: 20px; 
+      max-width: 1000px; 
+    }
+
+    h1 { margin-bottom: 5px; }
+
+    .row { 
+      display: flex; 
+      gap: 10px; 
+      flex-wrap: wrap; 
+      align-items: center; 
+    }
+
+    input, button, textarea { 
+      padding: 10px; 
+      font-size: 15px; 
+    }
+
+    input, textarea { 
+      flex: 1; 
+      min-width: 160px; 
+    }
+
+    textarea { 
+      min-height: 44px; 
+    }
+
+    button { 
+      cursor: pointer; 
+    }
+
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 12px; 
+    }
+
+    th, td { 
+      border-bottom: 1px solid #ddd; 
+      padding: 8px; 
+      text-align: left; 
+      vertical-align: top;
+    }
+
+    .card { 
+      border: 1px solid #ddd; 
+      border-radius: 10px; 
+      padding: 15px; 
+      margin: 15px 0; 
+    }
+
+    .muted { color: #666; }
+    .danger { color: #b00020; }
+    .right { text-align: right; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab {
+      border: 1px solid #ddd;
+      background: #fff;
+      border-radius: 20px;
+      padding: 6px 14px;
+    }
+
+    .tab.active {
+      font-weight: bold;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+</head>
+
+<body>
+
+<h1>🏍 Control de Moto</h1>
+<p class="muted">Viajes + Mantenimiento (GitHub Pages + Supabase)</p>
+
+<div class="card">
+  <h2>Iniciar sesión</h2>
+  <div class="row">
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Contraseña" />
+    <button id="btnSignup">Crear cuenta</button>
+    <button id="btnLogin">Entrar</button>
+    <button id="btnLogout" style="display:none;">Salir</button>
+  </div>
+  <p id="authMsg" class="muted"></p>
+</div>
+
+<div id="app" class="card" style="display:none;">
+
+  <div class="row" style="justify-content: space-between;">
+    <h2>Panel</h2>
+    <div class="tabs">
+      <button id="tabViajes" class="tab active">Viajes</button>
+      <button id="tabMant" class="tab">Mantenimiento</button>
+    </div>
+  </div>
+
+  <!-- ================= VIAJES ================= -->
+  <div id="secViajes" class="section active">
+
+    <h3>Registrar viaje</h3>
+    <div class="row">
+      <input id="fecha" type="date" />
+      <input id="inicio" placeholder="Inicio" />
+      <input id="destino" placeholder="Destino" />
+      <input id="km" type="number" step="0.1" placeholder="KM" />
+      <input id="costo" type="number" step="0.01" placeholder="Costo" />
+      <button id="btnAdd">Guardar</button>
+    </div>
+
+    <h3 style="margin-top:20px;">Resumen mensual</h3>
+    <div class="row">
+      <input id="mes" type="month" />
+      <button id="btnRefresh">Actualizar</button>
+    </div>
+
+    <div id="resumen" class="muted" style="margin-top:10px;"></div>
+
+    <h3 style="margin-top:20px;">Lista de viajes</h3>
+    <div id="tabla"></div>
+  </div>
+
+  <!-- ================= MANTENIMIENTO ================= -->
+  <div id="secMant" class="section">
+
+    <h3>Registrar mantenimiento</h3>
+    <div class="row">
+      <input id="mFecha" type="date" />
+      <textarea id="mDesc" placeholder="¿Qué se hizo?"></textarea>
+      <input id="mCosto" type="number" step="0.01" placeholder="Costo" />
+      <button id="btnAddMant">Guardar</button>
+    </div>
+
+    <h3 style="margin-top:20px;">Lista de mantenimientos</h3>
+    <div id="tablaMant"></div>
+  </div>
+
+</div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = "PEGA_AQUI_TU_PROJECT_URL";
+const SUPABASE_ANON_KEY = "PEGA_AQUI_TU_ANON_PUBLIC_KEY";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $ = id => document.getElementById(id);
+
+function formatMoney(n){ return Number(n||0).toFixed(2); }
+
+function ensureDefaults(){
+  const today = new Date().toISOString().slice(0,10);
+  if(!$("fecha").value) $("fecha").value = today;
+  if(!$("mFecha").value) $("mFecha").value = today;
+  if(!$("mes").value) $("mes").value = today.slice(0,7);
+}
+
+function monthRange(yyyymm){
+  const [y,m] = yyyymm.split("-").map(Number);
+  const start = `${y}-${String(m).padStart(2,"0")}-01`;
+  const nextM = m===12?1:m+1;
+  const nextY = m===12?y+1:y;
+  const end = `${nextY}-${String(nextM).padStart(2,"0")}-01`;
+  return {start,end};
+}
+
+function setTab(tab){
+  const isViajes = tab==="viajes";
+  $("tabViajes").classList.toggle("active",isViajes);
+  $("tabMant").classList.toggle("active",!isViajes);
+  $("secViajes").classList.toggle("active",isViajes);
+  $("secMant").classList.toggle("active",!isViajes);
+}
+
+async function refreshViajes(){
+  const {start,end} = monthRange($("mes").value);
+
+  const {data,error} = await supabase
+    .from("viajes")
+    .select("*")
+    .gte("fecha",start)
+    .lt("fecha",end)
+    .order("fecha",{ascending:false});
+
+  if(error){ $("tabla").innerHTML="Error"; return; }
+
+  const totalKm = data.reduce((a,v)=>a+Number(v.km||0),0);
+  const totalCosto = data.reduce((a,v)=>a+Number(v.costo||0),0);
+
+  $("resumen").innerHTML = `
+    Viajes: <b>${data.length}</b> |
+    KM: <b>${totalKm.toFixed(1)}</b> |
+    Gasto: <b>${formatMoney(totalCosto)}</b>
+  `;
+
+  if(!data.length){ $("tabla").innerHTML="Sin viajes."; return; }
+
+  $("tabla").innerHTML = `
+    <table>
+      <tr>
+        <th>Fecha</th>
+        <th>Ruta</th>
+        <th class="right">KM</th>
+        <th class="right">Costo</th>
+        <th></th>
+      </tr>
+      ${data.map(v=>`
+        <tr>
+          <td>${v.fecha}</td>
+          <td>${v.inicio} → ${v.destino}</td>
+          <td class="right">${Number(v.km).toFixed(1)}</td>
+          <td class="right">${formatMoney(v.costo)}</td>
+          <td><button onclick="deleteViaje('${v.id}')">X</button></td>
+        </tr>`).join("")}
+    </table>
+  `;
+}
+
+async function refreshMant(){
+  const {data,error} = await supabase
+    .from("mantenimientos")
+    .select("*")
+    .order("fecha",{ascending:false});
+
+  if(error){ $("tablaMant").innerHTML="Error"; return; }
+
+  if(!data.length){ $("tablaMant").innerHTML="Sin mantenimientos."; return; }
+
+  $("tablaMant").innerHTML = `
+    <table>
+      <tr>
+        <th>Fecha</th>
+        <th>Descripción</th>
+        <th class="right">Costo</th>
+        <th></th>
+      </tr>
+      ${data.map(m=>`
+        <tr>
+          <td>${m.fecha}</td>
+          <td>${m.descripcion}</td>
+          <td class="right">${formatMoney(m.costo)}</td>
+          <td><button onclick="deleteMant('${m.id}')">X</button></td>
+        </tr>`).join("")}
+    </table>
+  `;
+}
+
+window.deleteViaje = async id=>{
+  await supabase.from("viajes").delete().eq("id",id);
+  refreshViajes();
+};
+
+window.deleteMant = async id=>{
+  await supabase.from("mantenimientos").delete().eq("id",id);
+  refreshMant();
+};
+
+$("btnAdd").onclick = async ()=>{
+  const {data:{session}} = await supabase.auth.getSession();
+  if(!session) return alert("Debes iniciar sesión");
+
+  await supabase.from("viajes").insert({
+    user_id: session.user.id,
+    fecha: $("fecha").value,
+    inicio: $("inicio").value,
+    destino: $("destino").value,
+    km: Number($("km").value),
+    costo: Number($("costo").value)
+  });
+
+  $("inicio").value="";
+  $("destino").value="";
+  $("km").value="";
+  $("costo").value="";
+  refreshViajes();
+};
+
+$("btnAddMant").onclick = async ()=>{
+  const {data:{session}} = await supabase.auth.getSession();
+  if(!session) return alert("Debes iniciar sesión");
+
+  await supabase.from("mantenimientos").insert({
+    user_id: session.user.id,
+    fecha: $("mFecha").value,
+    descripcion: $("mDesc").value,
+    costo: Number($("mCosto").value)
+  });
+
+  $("mDesc").value="";
+  $("mCosto").value="";
+  refreshMant();
+};
+
+$("btnRefresh").onclick = refreshViajes;
+
+$("tabViajes").onclick = ()=>setTab("viajes");
+$("tabMant").onclick = ()=>setTab("mant");
+
+$("btnSignup").onclick = async ()=>{
+  const {error} = await supabase.auth.signUp({
+    email: $("email").value,
+    password: $("password").value
+  });
+  $("authMsg").textContent = error? error.message:"Cuenta creada.";
+};
+
+$("btnLogin").onclick = async ()=>{
+  const {error} = await supabase.auth.signInWithPassword({
+    email: $("email").value,
+    password: $("password").value
+  });
+  $("authMsg").textContent = error? error.message:"Sesión iniciada.";
+  updateUI();
+};
+
+$("btnLogout").onclick = async ()=>{
+  await supabase.auth.signOut();
+  updateUI();
+};
+
+async function updateUI(){
+  const {data:{session}} = await supabase.auth.getSession();
+  const logged = !!session;
+  $("app").style.display = logged?"block":"none";
+  $("btnLogout").style.display = logged?"inline-block":"none";
+  if(logged){
+    refreshViajes();
+    refreshMant();
+  }
+}
+
+ensureDefaults();
+updateUI();
+</script>
+
+</body>
+</html>
