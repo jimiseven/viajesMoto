@@ -192,25 +192,72 @@ function setTab(tab){
 async function refreshViajes(){
   const {start,end} = monthRange($("mes").value);
 
-  const {data,error} = await supabase
+  // Obtener viajes del mes
+  const {data:viajes,error:errorViajes} = await supabase
     .from("viajes")
     .select("*")
     .gte("fecha",start)
     .lt("fecha",end)
     .order("fecha",{ascending:false});
 
-  if(error){ $("tabla").innerHTML="Error"; return; }
+  // Obtener mantenimientos del mes
+  const {data:mantenimientos,error:errorMant} = await supabase
+    .from("mantenimientos")
+    .select("*")
+    .gte("fecha",start)
+    .lt("fecha",end)
+    .order("fecha",{ascending:false});
 
-  const totalKm = data.reduce((a,v)=>a+Number(v.km||0),0);
-  const totalCosto = data.reduce((a,v)=>a+Number(v.costo||0),0);
+  if(errorViajes || errorMant){ 
+    $("tabla").innerHTML="Error"; 
+    return; 
+  }
+
+  const totalViajes = viajes.length;
+  const totalKm = viajes.reduce((a,v)=>a+Number(v.km||0),0);
+  const totalCostoViajes = viajes.reduce((a,v)=>a+Number(v.costo||0),0);
+  const totalCostoMant = mantenimientos.reduce((a,v)=>a+Number(v.costo||0),0);
+  const totalMantenimientos = mantenimientos.length;
 
   $("resumen").innerHTML = `
-    Viajes: <b>${data.length}</b> |
-    KM: <b>${totalKm.toFixed(1)}</b> |
-    Gasto: <b>${formatMoney(totalCosto)}</b>
+    <div style="display: flex; gap: 30px; margin-bottom: 15px;">
+      <div style="flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+        <h4 style="margin: 0 0 10px 0; color: #333;">🏍 Viajes del mes</h4>
+        <div style="display: flex; gap: 20px;">
+          <div>
+            <div style="font-size: 24px; font-weight: bold; color: #2563eb;">${totalViajes}</div>
+            <div style="font-size: 12px; color: #666;">Viajes</div>
+          </div>
+          <div>
+            <div style="font-size: 24px; font-weight: bold; color: #059669;">${totalKm.toFixed(1)}</div>
+            <div style="font-size: 12px; color: #666;">Kilómetros</div>
+          </div>
+          <div>
+            <div style="font-size: 24px; font-weight: bold; color: #dc2626;">$${formatMoney(totalCostoViajes)}</div>
+            <div style="font-size: 12px; color: #666;">Gasto en viajes</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+        <h4 style="margin: 0 0 10px 0; color: #333;">🔧 Mantenimiento del mes</h4>
+        <div style="display: flex; gap: 20px;">
+          <div>
+            <div style="font-size: 24px; font-weight: bold; color: #7c3aed;">${totalMantenimientos}</div>
+            <div style="font-size: 12px; color: #666;">Servicios</div>
+          </div>
+          <div>
+            <div style="font-size: 24px; font-weight: bold; color: #dc2626;">$${formatMoney(totalCostoMant)}</div>
+            <div style="font-size: 12px; color: #666;">Gasto en mantenimiento</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align: center; padding: 10px; background: #f0f9ff; border-radius: 8px; margin-top: 10px;">
+      <strong>Total gastado este mes: $${formatMoney(totalCostoViajes + totalCostoMant)}</strong>
+    </div>
   `;
 
-  if(!data.length){ $("tabla").innerHTML="Sin viajes."; return; }
+  if(!viajes.length){ $("tabla").innerHTML="Sin viajes."; return; }
 
   $("tabla").innerHTML = `
     <table>
@@ -221,7 +268,7 @@ async function refreshViajes(){
         <th class="right">Costo</th>
         <th></th>
       </tr>
-      ${data.map(v=>`
+      ${viajes.map(v=>`
         <tr>
           <td>${v.fecha}</td>
           <td>${v.inicio} → ${v.destino}</td>
