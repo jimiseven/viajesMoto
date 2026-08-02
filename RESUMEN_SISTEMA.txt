@@ -1,0 +1,164 @@
+==========================================================
+RESUMEN DEL SISTEMA: CONTROL DE MOTO
+(Viajes + Mantenimiento)
+==========================================================
+
+1. ¿QUÉ ES EL SISTEMA?
+----------------------------------------------------------
+Es una aplicación web de página única (SPA) llamada "Control Moto",
+diseñada para registrar y consultar la actividad de una motocicleta:
+viajes realizados y mantenimientos/servicios. Está pensada para uso
+personal de un solo usuario (aunque soporta multi-usuario a nivel de
+base de datos) y permite llevar control de kilómetros y gastos.
+
+Archivo principal: index.html (todo el sistema vive en un solo archivo:
+HTML + CSS + JavaScript).
+
+Hosting actual: GitHub Pages (estático).
+Base de datos / autenticación: Supabase (nube).
+
+
+2. STACK TECNOLÓGICO
+----------------------------------------------------------
+- HTML5 + CSS3 con diseño responsive (media queries para móvil/tablet).
+- JavaScript vanilla (ES Modules, sin frameworks).
+- Supabase JS SDK v2 (cargado vía CDN: https://esm.sh/@supabase/supabase-js@2).
+- Supabase Auth: registro e inicio de sesión con email + contraseña.
+- Supabase PostgreSQL: tablas "viajes" y "mantenimientos".
+- Clave anónima (anon key) expuesta en el cliente (modelo típico de
+  Supabase con Row Level Security en el backend).
+
+
+3. ESTRUCTURA DE DATOS (TABLAS EN SUPABASE)
+----------------------------------------------------------
+Tabla "viajes":
+  - id          (uuid, llave primaria)
+  - user_id     (uuid, dueño del registro)
+  - fecha       (date, formato YYYY-MM-DD)
+  - inicio      (text, punto de partida)
+  - destino     (text, punto de llegada)
+  - km          (número, decimal, kilómetros recorridos)
+  - costo       (número, decimal, costo del viaje)
+  - created_at  (timestamp, auto, usado para ordenar)
+
+Tabla "mantenimientos":
+  - id          (uuid, llave primaria)
+  - user_id     (uuid, dueño del registro)
+  - fecha       (date, formato YYYY-MM-DD)
+  - descripcion (text, qué se hizo en el servicio)
+  - costo       (número, decimal, costo del mantenimiento)
+  - created_at  (timestamp, auto, usado para ordenar)
+
+Nota: la app asume la existencia de la columna created_at en ambas
+tablas, pero incluye un "fallback" por si no existe (reintenta la
+consulta sin esa columna).
+
+
+4. FUNCIONALIDADES PRINCIPALES
+----------------------------------------------------------
+A) AUTENTICACIÓN
+   - Crear cuenta (registro con email y contraseña).
+   - Iniciar sesión (Supabase Auth, sesión persistente).
+   - Cerrar sesión.
+   - La app muestra/oculta el panel según haya sesión activa.
+   - Los registros insertados se asocian al user_id de la sesión.
+
+B) MÓDULO VIAJES
+   - Registrar viaje: fecha, inicio, destino, km y costo.
+   - Vista mensual (mes seleccionado):
+       * Tarjetas de resumen: número de viajes, total de km,
+         gasto en viajes del mes.
+       * Últimos 5 viajes (tabla con fecha, ruta, km, costo).
+       * Total gastado en el mes (viajes + mantenimiento).
+   - Vista anual (año seleccionado):
+       * Tabla con desglose por cada mes del año: cantidad de
+         viajes, km, gasto en viajes, cantidad de mantenimientos,
+         gasto en mantenimiento y total del mes.
+   - Historial completo (modal): combina viajes y mantenimientos
+     del mes seleccionado en una sola lista ordenada por fecha de
+     ingreso, con iconos (motorcycle/llave), y permite eliminar
+     cada registro.
+
+C) MÓDULO MANTENIMIENTO
+   - Registrar mantenimiento: fecha, descripción y costo.
+   - Vista mensual: cantidad de mantenimientos y costo total.
+   - Últimos 5 mantenimientos (tabla).
+   - Historial completo (modal) con opción de eliminar.
+
+D) ELIMINACIÓN DE REGISTROS
+   - Borrar viajes o mantenimientos desde los historiales,
+     con refresco automático de todas las vistas (menú mensual,
+     anual e historial).
+
+E) RESUMEN ECONÓMICO
+   - Cálculo de totales mensuales y anuales.
+   - Nota: en el resumen anual el "Total $" se calcula como
+     costoViajes - costoMant (resta), lo cual parece un error
+     de lógica (debería ser suma).
+
+
+5. DETALLES TÉCNICOS DEL CÓDIGO
+----------------------------------------------------------
+- Cliente Supabase creado con SUPABASE_URL y SUPABASE_ANON_KEY
+  (estos valores están en el archivo; la URL es
+  https://punkkhbrdczughyplqpe.supabase.co).
+- Helper $ = document.getElementById (acceso rápido a elementos).
+- formatMoney(n): formatea números a 2 decimales.
+- monthRange(yyyymm): calcula rango de fechas de un mes
+  (inicio del mes al inicio del siguiente) para filtrar consultas.
+- yearRange(year): rango del año completo.
+- fetchMonthData: consulta viajes y mantenimientos del mes en
+  paralelo (Promise.all) con caché en memoria (Map "monthCache")
+  para evitar repetir consultas.
+- fallback: si la consulta falla por falta de columna created_at,
+  reintenta sin ordenar por esa columna.
+- Caché en memoria se limpia (monthCache.clear()) tras insertar
+  o eliminar registros.
+- Actualización de UI: funciones refreshViajes,
+  refreshMantenimientoMes, refreshHistorial,
+  refreshHistorialMant, refreshResumenAnualTabla.
+- Pestañas: "Viajes" y "Mantenimiento" (setTab).
+- Vistas del panel de viajes: mes/año (setVistaDashboard).
+- Modales para historiales con cierre por botón o click en fondo.
+- Formateo de fechas: el mes usa input type="month" y fechas
+  con input type="date".
+
+
+6. SEGURIDAD Y LIMITACIONES ACTUALES
+----------------------------------------------------------
+- La clave anónima de Supabase está expuesta en el frontend
+  (normal en Supabase; la protección real depende de las reglas
+  RLS en la base de datos).
+- El renderizado de listas usa interpolación directa de strings
+  (innerHTML); los textos de inicio/destino/descripción no se
+  escapan, lo que podría permitir inyección de HTML si un dato
+  contiene etiquetas maliciosas (riesgo XSS, aunque bajo por ser
+  uso personal).
+- El botón de eliminar usa onclick global (window.deleteViaje /
+  window.deleteMant) sin confirmación previa.
+- No hay edición de registros (solo crear y borrar).
+- No hay campos obligatorios validados (puede guardar viajes
+  vacíos si el usuario no completa los campos).
+- No hay paginación (se traen todos los registros del mes/año).
+- La sesión se restaura sola al recargar (Supabase maneja el token
+  de sesión automáticamente).
+
+
+7. POSIBLES MEJORAS PARA EL SISTEMA NUEVO
+----------------------------------------------------------
+- Corregir el total anual (sumar en lugar de restar costos).
+- Agregar edición y borrado con confirmación.
+- Validación de formularios (campos obligatorios).
+- Escapar el HTML en las listas para evitar XSS.
+- Agregar categorías de mantenimiento (aceite, llantas, frenos, etc.).
+- Recordatorios de mantenimiento por kilómetros o tiempo
+  (proximidad de servicios).
+- Gráficas de tendencia (km por mes, gastos por mes).
+- Exportar datos a CSV/Excel.
+- Soporte de múltiples motos.
+- Cálculo de rendimiento (km por litro) si se registra combustible.
+- Mejorar la UI con framework (React/Vue) o mantener vanilla.
+
+==========================================================
+FIN DEL RESUMEN
+==========================================================
